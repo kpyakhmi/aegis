@@ -1,0 +1,39 @@
+# Aegis policy definition
+# This is the artifact a risk/compliance owner would actually author and
+# review in a PR -- versioned, diffable, human-readable. Terraform for
+# agent permissions, not a hardcoded allowlist buried in application code.
+
+policies:
+
+  - agent_id: support-agent-v1
+    tool: refunds
+    action: issue_refund
+    tier: 2                     # GUARDED: autonomous within bounds
+    limits:
+      max_amount_usd: 200
+    escalate_above_limit: true  # over-limit requests drop to SUGGEST (tier 1)
+
+  - agent_id: support-agent-v1
+    tool: email
+    action: send_email
+    tier: 2
+    limits:
+      allowed_domains: ["internal.example.com"]
+
+  - agent_id: devtools-agent-v1
+    tool: github
+    action: merge_pr
+    tier: 1                     # SUGGEST: always requires human approval in v1
+    limits: {}
+
+  - agent_id: devtools-agent-v1
+    tool: github
+    action: open_pr
+    tier: 3                     # AUTONOMOUS: low blast radius, fully reversible
+    limits: {}
+
+  - agent_id: finance-agent-v1
+    tool: payments
+    action: wire_transfer
+    tier: 0                     # OBSERVE only: no policy trusts this yet
+    limits: {}
